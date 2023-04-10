@@ -1,0 +1,695 @@
+var path = "https://www.properpizza.com/wp-content/themes/properpizza/";
+
+$(document).ready(function(){
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+
+
+
+var singleExists = document.getElementById("single-page");
+
+
+
+if(singleExists) {
+
+
+
+    var single = new Vue({
+
+        el: '#single-page',
+
+        data: {
+
+            currentid: 0,
+
+            opcionet: [],
+
+            currentstatus: ''
+
+        },
+
+        methods: {
+
+            statusFun: function(id) {
+
+                axios.get(path + "api/status.php", {
+
+                    params: {
+
+                        id: id
+
+                    }
+
+                }).then(function (response) {
+
+                    single.opcionet = response.data.results;
+
+                    if(single.currentstatus != response.data.current) {
+
+var audio = document.getElementById("level-up"); 
+
+                        audio.play();
+
+                    }
+
+                    single.currentstatus = response.data.current;
+
+                });
+
+            }
+
+        },
+
+        mounted:function(){
+
+            var el = document.querySelector('#single-page');
+
+            var currentid = el.dataset.id;
+
+            this.statusFun(currentid);
+
+            setInterval(function(){
+
+                single.statusFun(currentid);
+
+            }, 10000);
+
+        }
+
+    });
+
+
+
+}
+
+
+
+var picatExists = document.getElementById("picatHolder");
+
+
+
+if(picatExists) {
+
+
+
+    var picat = new Vue({
+
+        el: '#picatHolder',
+
+        data: {
+
+            picatSlider: [],
+
+            krejtPicat: [],
+
+            picaSelected: 0
+
+        },
+
+        methods: {
+
+            picatSliderFun: function(parameter) {
+
+                axios.get(path + "api/picat.php", {
+
+                    params: {
+
+                        parameter: parameter
+
+                    }
+
+                }).then(function (response) {
+
+                    picat.picatSlider = response.data.results;
+
+                });
+
+            },
+
+            picatFun: function() {
+
+                axios.get(path + "api/picat.php").then(function (response) {
+
+                    picat.krejtPicat = response.data.results;
+
+                });
+
+            },
+
+            addBasket:function(quantity,id,key) {
+
+                basket.shporta = [];
+
+                basket.nrpicat = 0;
+
+                basket.totali = 0;
+
+                axios.get(path + "api/shtoShport.php", {
+
+                    params: {
+
+                        id: id,
+
+                        quantity:quantity,
+
+                        key:key
+
+                    }
+
+                }).then(function (response) {
+
+                    if(response.data.success) {
+
+                        picat.picatSliderFun('slider');
+
+                        picat.picatFun();
+
+                        basket.currentBasket();
+
+                    }
+
+                });
+
+            },
+
+            changeBasket:function(quantity, id, key, type) {
+
+                axios.get(path + "api/shtoShport.php", {
+
+                    params: {
+
+                        quantity:quantity,
+
+                        id: id,
+
+                        key:key,
+
+                        type: type
+
+                    }
+
+                }).then(function (response) {
+
+                    if(response.data.success) {
+
+                        picat.picatSliderFun('slider');
+
+                        picat.picatFun();
+
+                        basket.currentBasket();
+
+                    }
+
+                });
+
+            },
+
+            porosiFalas:function() {
+
+                if(picat.picaSelected) {
+
+                    const params = new URLSearchParams();
+
+                    params.append('picaSelected', picat.picaSelected);
+
+                    axios({
+
+                      method: 'post',
+
+                      url: path + 'api/picaFalas.php',
+
+                      data: params
+
+                    }).then(function (response) {
+
+                        if(response.data.success == "1") {
+
+                            window.location.href = response.data.link;
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+        },
+
+        components: {
+
+            'carousel': VueCarousel.Carousel,
+
+            'slide': VueCarousel.Slide
+
+        },
+
+        mounted:function(){
+
+            this.picatSliderFun('slider');
+
+            this.picatFun();
+
+        },
+
+        updated:function() {
+
+
+
+            $("body").on("click", "#shporta", function(){
+
+                $(".overlay-black , .order-holder").addClass("open");
+
+            });
+
+
+
+            $("body").on("click", ".overlay-black", function(){
+
+                $(".overlay-black , .order-holder").removeClass("open");
+
+            });
+
+
+
+        }
+
+    });
+
+
+
+}
+
+
+
+var mapHolder = document.getElementById("mapHolder");
+
+
+
+if(mapHolder) {
+
+
+
+    var mapVue = new Vue({
+
+        el: '#mapHolder',
+
+        data: {
+
+            locations: [],
+
+            state: 0,
+
+            map: ''
+
+        },
+
+        methods: {
+
+            locationFun: function(state) {
+                axios.get(path + "api/locations.php", {
+                    params: {
+                        state: state
+                    }
+                }).then(function (response) {
+
+                    var selected = document.getElementById('select-map'); 
+                    if(selected) {
+                        var lat = selected.options[selected.selectedIndex].dataset.lat;
+                        var lon = selected.options[selected.selectedIndex].dataset.lon;
+                        var zoom = selected.options[selected.selectedIndex].dataset.zoom;
+
+                        mapVue.locations = response.data.results;
+
+                        var LeafIcon = L.Icon.extend({
+                            options: {
+                                iconSize:[30, 30]
+                            }
+                        });
+                        var properIcon = new LeafIcon({iconUrl: path + '/assets/img/proper-logo.png'});
+                        var location = L.layerGroup();
+
+                        for (var i = mapVue.locations.length - 1; i >= 0; i--) {
+                            L.marker([mapVue.locations[i].latitute, mapVue.locations[i].longtitute], {icon: properIcon}).bindPopup(mapVue.locations[i].title + ' - ' + mapVue.locations[i].address).addTo(location);
+                        };
+
+                        var mbUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+                        var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox/dark-v9'});
+                        mapVue.map = L.map('map', {
+                            center: [lat, lon],
+                            zoom: zoom,
+                            layers: [grayscale, location]
+                        });
+
+
+
+                        mapVue.map.scrollWheelZoom.disable();
+                    }
+
+                });
+            },
+            changeStateFunction:function(state) {
+
+                mapVue.map.off();
+
+                mapVue.map.remove();
+
+                mapVue.locationFun(state);
+
+            }
+
+        },
+
+        components: {
+
+            'carousel': VueCarousel.Carousel,
+
+            'slide': VueCarousel.Slide
+
+        },
+
+        mounted:function(){
+
+            this.locationFun();
+
+        }
+
+    });
+
+
+
+}
+
+
+
+var basketExists = document.getElementById("basket");
+
+
+
+if(basketExists) {
+
+
+
+    var basket = new Vue({
+
+        el: '#basket',
+
+        data: {
+
+            shporta: [],
+
+            totali:0,
+
+            nrpicat:0
+
+        },
+
+        methods: {
+
+            removeBasket:function(id,key) {
+
+                const params = new URLSearchParams();
+
+                params.append('id', id);
+
+                params.append('key', key);
+
+                axios({
+
+                  method: 'post',
+
+                  url: path + 'api/largoShporta.php',
+
+                  data: params
+
+                }).then(function (response) {
+
+                    basket.shporta = [];
+
+                    basket.nrpicat = 0;
+
+                    basket.totali = 0;
+
+                    $.each(response.data, function(index, value) {
+
+                        basket.shporta.push({
+
+                            title:value.title,
+
+                            id:value.id,
+
+                            pizzas: value.picat
+
+                        });
+
+                        $.each(value.picat, function(n, item) {
+
+                            basket.nrpicat += parseInt(item.quantity);
+
+                            basket.totali += parseFloat(item.price);
+
+                        });
+
+                    });
+
+                    picat.picatSliderFun('slider');
+
+                    picat.picatFun();
+
+                });
+
+            },
+
+            currentBasket:function() {
+
+                axios.get(path + "api/shporta.php").then(function (response) {
+
+                    basket.shporta = [];
+
+                    basket.nrpicat = 0;
+
+                    basket.totali = 0;
+
+                    $.each(response.data, function(index, value) {
+
+                        basket.shporta.push({
+
+                            title:value.title,
+
+                            id:value.id,
+
+                            pizzas: value.picat
+
+                        });
+
+                        $.each(value.picat, function(n, item) {
+
+                            basket.nrpicat += parseInt(item.quantity);
+
+                            basket.totali += parseFloat(item.price) * parseInt(item.quantity);
+
+                        });
+
+                    });
+
+                });
+
+            }
+
+        },
+
+        mounted:function(){
+
+            this.currentBasket();
+
+        }
+
+    });
+
+
+
+}
+
+
+
+var loginExists = document.getElementById("loginForm");
+
+
+
+if(loginExists) {
+
+
+
+    var login = new Vue({
+
+        el: '#loginForm',
+
+        data: {
+
+            number: null,
+
+            password:null
+
+        },
+
+        methods: {
+
+            loginForm:function() {
+
+                const params = new URLSearchParams();
+
+                params.append('number', login.number);
+
+                params.append('password', login.password);
+
+                axios({
+
+                  method: 'post',
+
+                  url: path + 'api/login.php',
+
+                  data: params
+
+                }).then(function (response) {
+
+                    if(response.data.success == "1") {
+
+                        window.location.href = response.data.link;
+
+                    }
+
+                });
+
+            }
+
+        }
+
+    });
+
+}
+
+
+
+var registerExists = document.getElementById("registerForm");
+
+
+
+if(registerExists) {
+
+
+
+    var register = new Vue({
+
+        el: '#registerForm',
+
+        data: {
+
+            number: null,
+
+            emri: null,
+
+            adresa:null,
+
+            email:null,
+
+            fjalekalimi:null,
+
+            pika:51,
+
+            registerShow: false,
+
+            message: null,
+
+            details: null
+
+        },
+
+        methods: {
+
+            registerForm:function() {
+
+                const params = new URLSearchParams();
+
+                params.append('emri', register.emri);
+
+                params.append('number', register.number);
+
+                params.append('details', register.details);
+
+                params.append('adresa', register.adresa);
+
+                params.append('fjalekalimi', register.fjalekalimi);
+
+                params.append('pika', register.pika);
+
+                axios({
+
+                  method: 'post',
+
+                  url: path + 'api/register.php',
+
+                  data: params
+
+                }).then(function (response) {
+
+                    if(response.data.success == "1") {
+
+                        window.location.href = response.data.link;
+
+                    } else if(response.data.success == "2") {
+
+                        register.message = response.data.message;
+
+                    }
+
+                });
+
+            },
+
+            porositFun:function(){
+
+                const params = new URLSearchParams();
+
+                params.append('number', register.number);
+
+                params.append('details', register.details);
+
+                axios({
+
+                  method: 'post',
+
+                  url: path + 'api/porosit.php',
+
+                  data: params
+
+                }).then(function (response) {
+
+                    if(response.data.success == "0") {
+
+                        register.registerShow = true;
+
+                        register.message = null;
+
+                    } else if(response.data.success == "1") {
+
+                        window.location.href = response.data.link;
+
+                    } else if(response.data.success == "2") {
+
+                        register.message = response.data.message;
+
+                    }
+
+                });
+
+
+
+            }
+
+        }
+
+    });
+
+}

@@ -66,7 +66,7 @@ const  Order = ()=> {
           </div>
           <div className = {statusClass(3)}>
             <Image src = "/img/delivered.png" width={30} height={30} alt = ""/>
-          <span>Delevered </span>
+          <span>Delevery </span>
           <div className ={styles.checkedIcon} >
             {" "}
             <Image className = {styles.checkedIcon} src = "/img/checked.png" width={20} height={20} alt = ""/>

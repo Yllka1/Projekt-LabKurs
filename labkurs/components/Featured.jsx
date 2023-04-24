@@ -5,7 +5,7 @@ import { useState } from "react";
 const Featured = () => {
   const [index, setIndex] = useState(0);
   const images = [
-    "/img/featured.png",
+    "/img/macho.png",
     "/img/featured2.png",
     "/img/featured3.png",
   ];

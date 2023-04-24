@@ -10,7 +10,8 @@ const  Footer = () => {
     <div className= {styles.item}>
     <div className= {styles.card}>
       <h2 className= {styles.motto}>
-      OH YES, WE DID THE PIZZA, WELL BAKED SLICE OF PIZZA.
+      OH YES, WE DID THE FAY PIZZA, WELL BAKED SLICE OF PIZZA.
+
       </h2>
       
     </div>
@@ -53,6 +54,6 @@ const  Footer = () => {
       
       </div>
   );
+
 };
 
-export default Footer

@@ -1,5 +1,6 @@
 import styles from "../../styles/Order.module.css";
 import Image from "next/image";
+
 const  Order = ()=> {
    const status = 0;
   const statusClass =  (index) => {
@@ -94,4 +95,4 @@ const  Order = ()=> {
   )
 }
 
-export default Order
+export default Order;

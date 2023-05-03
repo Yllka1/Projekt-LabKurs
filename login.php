@@ -1,92 +1,93 @@
-<?php
-    include('includes/header.php');
-    $_SESSION['page'] = 'login';
+<?php 
+    session_start();
+    include 'autoload.php';
 
-    $error = '';
     $errors = [];
-    
-    // include('classes/CRUD.php');
-    $crud = new CRUD;
 
     if(isset($_POST['login_btn'])) {
-        if(strlen($_POST['username']) < 3)
-            $errors[] = 'Username is empty or too short!';
-            
-        if(strlen($_POST['password']) < 6)
-            $errors[] = 'Password is empty or too short!';
-        
-        $user = $crud->read('users', ['column' => 'username', 'value' => $_POST['username']], 1);
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $role = $_POST['role'];
+        $user_obj = new Auth($username, $password, $role);
 
-        
-        if( (count($errors) === 0) && is_array($user) && (count($user) > 0) ) {
-            $user = $user[0]; 
+        if($user = $user_obj->login()) {
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['is_logged_in'] = true;
+            $_SESSION['is_admin'] = $user['is_admin'];
 
-            if(password_verify($_POST['password'], $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['is_loggedin'] = true;
-
-                // remember me 
-                if(isset($_POST['rememberme'])) {
-                    if($_POST['rememberme'] == 1) {
-                        $expire = time() + 3600 * 24 * 30;
-                        setcookie('user_id', $_SESSION['user_id'], $expire);
-                        setcookie('username', $_SESSION['username'], $expire);
-                        setcookie('role', $_SESSION['role'], $expire);
-                        setcookie('is_loggedin', $_SESSION['is_loggedin'], $expire);
-                    }
+            if(isset($_POST['remember_me'])) {
+                if($_POST['remember_me'] == 1) {
+                    setcookie("username", $_SESSION['username'], time()+3600);
+                    setcookie("is_logged_in", $_SESSION['is_logged_in'], time()+3600);
+                    setcookie("is_admin", $_SESSION['is_admin'], time()+3600);
                 }
-                
-                if($user['role'] === 'client') 
-                    header('Location: dashboard/orders/index.php');
-                else  
-                    header('Location: dashboard/index.php');
-            } else {
-                $_SESSION['error'] = 'Credentials are incorrect!';
             }
+
+            if($user['is_admin'] == 1)
+                header("Location: admin-panel.php");
+            else 
+                header("Location: profile.php");
         } else {
-            $_SESSION['error'] = 'User does not exist!';
+            $errors[] = "Username or/and password is incorrect!";
         }
     }
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | e-commerce</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+</head>
+<body>
 
-<div class="auth my-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Login</h2>
-        <?php 
-            if(isset($_SESSION['error'])) {
-                echo '<p class="text-center">'.$_SESSION['error'].'</p>'; 
-            }
-        ?>
-        <?php if(isset($error)) echo '<p>'.$error.'</p>'; ?>
-        <?php 
-            if(count($errors)) {
-                echo '<ul>';
-                foreach($errors as $error) {
-                    echo '<li>'.$error.'</li>';
-                }
-                echo '</ul>';
-            }
-        ?>
-        <form method="POST" action="<?= $_SERVER['PHP_SELF'] ?>">
-            <div class="mb-3">
-                <label for="username" class="form-label">Email address</label>
-                <input type="email" name="username" class="form-control" id="username" aria-describedby="usernameHelp" />
-                <div id="usernameHelp" class="form-text">We'll never share your email with anyone else.</div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <?php
+                    if(count($errors)) {
+                ?>
+                    <div class="alert alert-danger">
+                        <ul>
+                        <?php foreach($errors as $error): ?>
+                            <li><?= $error ?></li>
+                        <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php   
+                    }
+                ?>
+
+                <a href="index.php"><h1 class="my-5 align-center">e-commerce</h1></a>
+
+                <form method="POST">
+                    <div class="form-group">
+                        <select name="role" class="form-control">
+                            <option value="0">Customer</option>
+                            <option value="1">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputPassword1">Password</label>
+                        <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" name="remember_me" value="1" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                    </div>
+                    <button type="submit" name="login_btn" class="btn btn-primary">Login</button>
+                    <a href="register.php" class="btn btn-sm btn-link">Register</a>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" id="password" />
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="rememberme" value="1" class="form-check-input" id="rememberme" value="yes">
-                <label class="form-check-label" for="rememberme">Remember me</label>
-            </div>
-            <button type="submit" name="login_btn" class="btn btn-primary">Login</button>
-            <a href="register.php" class="btn btn-link">Let me register first</a>
-        </form>
+        </div>
     </div>
-</div>
 
-<?php include('includes/footer.php') ?>
+</body>
+</html>

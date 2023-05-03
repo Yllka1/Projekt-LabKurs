@@ -1,122 +1,104 @@
-<?php 
-  include('includes/header.php');
-  
-  // include('classes/CRUD.php');
-  $crud = new CRUD;
+<?php
+    session_start();
+    include 'classes/autoload.php';
+    $products = new Products;
+    $errors = [];
 
-  $error = '';
-  $errors = [];
+    // unset($_SESSION['cart']);
 
-  if(!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-  } else {
-    $_SESSION['cart'] = [];
-  }
+    if(!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
 
-  $slides = $crud->read('sliders', [], 3, ['column' => 'id', 'order' => 'desc']);
-  $products = $crud->read('products', [], 4, ['column' => 'id', 'order' => 'desc']);
+    if(isset($_POST['add_to_cart_btn'])) {
+        $id = $_POST['product_id'];
+        $_SESSION['qty'] = $_POST['qty'];
+
+        if($id > 0)
+            add_to_cart($products->get($id));
+        else 
+            $errors[] = "Product doesn't exist!";
+    }
+
+    function add_to_cart($product) {
+        $product = [
+            'id' => $product['id'],
+            'title' => $product['title'],
+            'price' => $product['price'], 
+            'qty' => $_SESSION['qty']
+        ];
+
+        if(count($_SESSION['cart']) > 0) {
+            $existing_item_id = null;
+            foreach($_SESSION['cart'] as $item_id => $item) {
+                if($product['id'] == $item['id'])
+                    $existing_item_id = $item_id;
+            }
+            if(is_null($existing_item_id)) {
+                $next_item = count($_SESSION['cart']);
+                $_SESSION['cart'][$next_item] = $product;
+            } else {
+                $_SESSION['cart'][$existing_item_id]['qty'] += $product['qty'];
+            }
+        } else {
+            $_SESSION['cart'][0] = $product;
+        }
+    }
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | e-commerce</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+</head>
+<body>
 
-<div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="false">
-  <div class="carousel-indicators">
-    <?php 
-    if(count($slides) > 0) {
-      for($i = 0; $i < count($slides); $i++) {
-    ?>
-    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="<?= $i ?>" <?php if($i === 0) echo 'class="active"'; else echo ''; ?> aria-current="true" aria-label="Slide <?= $i ?>"></button>
-    <?php
-      }
-    }
-    ?>
-  </div>
-  <div class="carousel-inner">
-    <?php
-    if(count($slides) > 0) {
-      foreach($slides as $ind => $slide) {
-    ?>
-    <div class="carousel-item <?php if($ind === 0) echo 'active'; else echo ''; ?>" data-bs-interval="3000">
-      <img src="dashboard/slides/images/<?= $slide['image'] ?>" class="d-block w-100" alt="<?= $slide['title'] ?>" />
-      <div class="carousel-caption d-none d-md-block">
-        <h5><?= $slide['title'] ?></h5>
-        <p><?= $slide['content'] ?></p>
-      </div>
-    </div>
-    <?php
-      }
-    }
-    ?>
-  </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
+    <?php include 'includes/menu.php' ?>
 
-
-<div class="latest-products py-5">
-    <div class="container">
-        <h2 class="pb-4 text-center">Latest products</h2>
-        <div class="row">
-            <?php 
-            if(count($products) > 0) {
-              foreach($products as $product) {
+    <?php
+                if(count($errors)) {
             ?>
-            <div class="col-sm-12 col-md-3 col-lg-3">
-                <div class="card py-4">
-                    <img src="dashboard/products/images/<?= $product['image'] ?>" class="product-image" alt="<?= $product['name'] ?>" />
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                          <h5 class="card-title"><?= $product['name'] ?></h5>
-                          <p class="card-text"><?= $product['price'] ?> EUR</p>
+                <div class="alert alert-danger">
+                    <ul>
+                   <?php foreach($errors as $error): ?>
+                        <li><?= $error ?></li>
+                    <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php   
+                }
+            ?>
+
+    <div class="container my-5">
+        <div class="row">
+            <?php foreach($products->all() as $product): ?>
+                <div class="col-md-4 my-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <?php
+                                $images = json_decode($product['images'], true);
+
+                                if(count($images)) {
+                            ?>
+                                <img src="./assets/img/products/<?= $images[0] ?>" alt="<?= $product['title'] ?>" class="img-fluid" style="height: 220px; display: block; margin: 0px auto;" />
+                                <?php }  ?>
+                            <h4><?= $product['title'] ?></h4>
+                            <p>
+                                Price: <strong><?= $product['price'] ?></strong>
+                            </p>
+                            <form method="POST">
+                                <input type="number" name="qty" min="1" max="<?= $product['qty'] ?>" value="1">
+                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                <button type="submit" name="add_to_cart_btn" class="btn btn-sm btn-primary">Add to cart</button>
+                            </form>
                         </div>
-                        <a href="view-product.php?id=<?= $product['id'] ?>" class="btn btn-outline-secondary d-flex align-items-center">
-                          <img src="./assets/img/eye.svg" alt="" />
-                        </a>
                     </div>
                 </div>
-            </div>
-            <?php 
-              }
-            } else {
-            ?>
-            <div class="col-sm-12 col-md-12 col-lg-12">
-              <p>0 products</p>
-            </div>
-            <?php } ?>
-        </div>
-        <div class="row my-5">
-          <div class="col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center">
-            <a href="shop.php" class="btn btn-outline-primary">Shop now</a>
-          </div>
+            <?php endforeach; ?>
         </div>
     </div>
-</div>
-
-
-<div class="about my-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-12 col-md-4 col-lg-4">
-                <img src="./assets/img/aboutus.jpg" class="img-fluid" alt="Online Shop" />
-            </div>
-            <div class="col-sm-12 col-md-8 col-lg-8">
-                <h3>Online Shop</h3>
-                <p>
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Asperiores veritatis, veniam blanditiis et facere odio tempora non sequi, iure tempore vitae dolorem quo rem soluta laborum dolor unde reiciendis officia?
-                </p>
-                <p>
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Asperiores veritatis, veniam blanditiis et facere odio tempora non sequi, iure tempore vitae dolorem quo rem soluta laborum dolor unde reiciendis officia?
-                </p>
-                <p>
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Asperiores veritatis, veniam blanditiis et facere odio tempora non sequi, iure tempore vitae dolorem quo rem soluta laborum dolor unde reiciendis officia?
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php include('includes/footer.php') ?>
+    
+</body>
+</html>

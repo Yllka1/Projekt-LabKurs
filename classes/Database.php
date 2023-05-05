@@ -5,12 +5,13 @@ class Database {
     private $connection = null;
 
     public function __construct() {
-        $this->connection = new mysqli("localhost", "root", "", "store");
+        $this->connection = new mysqli('localhost', 'root', '', 'ecommerce');
     }
 
     public static function getInstance() {
-        if(!self::$instance) 
-            self::$instance = new self();
+        if(!self::$instance) {
+            self::$instance = new self;
+        }
         
         return self::$instance;
     }
@@ -19,3 +20,4 @@ class Database {
         return $this->connection;
     }
 }
+

@@ -1,0 +1,14 @@
+.product-image {
+    height: 150px;
+    display: block;
+    margin: 0 auto;
+}
+
+.products .card:hover img.product-image {
+    transition: all .4s;
+    transform: scale(1.1);
+}
+
+.card {
+    overflow: hidden !important;
+}

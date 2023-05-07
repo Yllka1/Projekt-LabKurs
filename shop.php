@@ -2,7 +2,7 @@
     include('includes/header.php');
     $_SESSION['page'] = 'shop';
 
-    //  include('classes/CRUD.php');
+    // include('classes/CRUD.php');
     $crud = new CRUD;
   
     $error = '';

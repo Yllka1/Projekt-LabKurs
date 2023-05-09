@@ -1,5 +1,4 @@
-?php include('../includes/header.php'); 
-?>
+<?php include('../includes/header.php'); ?>
 
 <?php 
     $_SESSION['page'] = 'products';

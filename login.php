@@ -1,4 +1,4 @@
-?php
+<?php
     include('includes/header.php');
     $_SESSION['page'] = 'login';
 

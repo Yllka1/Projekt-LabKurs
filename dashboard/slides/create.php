@@ -1,4 +1,4 @@
-<?php include('../includes/header.php'); ?>
+<<?php include('../includes/header.php'); ?>
 
 <?php 
     $_SESSION['page'] = 'create slide';
@@ -14,7 +14,7 @@
             $errors[] = 'Image file type is not supported!';
         
         if(strlen($_POST['title']) < 3)
-            $errors[] = 'This title is empty or too short!';
+            $errors[] = 'Title is empty or too short!';
 
         if(strlen($_POST['description']) < 3)
             $errors[] = 'Description is empty or too short!';
@@ -32,7 +32,7 @@
                 move_uploaded_file($_FILES['image']['tmp_name'], 'images/'.$filename);
                 header('Location: index.php');
             } else {
-                $error = 'Something went wrong!';
+                $error = 'Something want wrong!';
             }
         }
     }

@@ -2,24 +2,24 @@
     session_start();
 
     if(!isset($_SESSION['is_loggedin'])) {
-        header('Location: http://localhost/ecommerce/login.php');
+        header('Location: http://localhost/Projekt-LabKurs/login.php');
     } else {
         if((boolean)$_SESSION['is_loggedin'] !== true) {
-            header('Location: http://localhost/ecommerce/login.php');
+            header('Location: http://localhost/Projekt-LabKurs/login.php');
         }
     }
 
     $path = $_SERVER['SCRIPT_NAME'];
     $pages = [
-        '/ecommerce/dashboard/orders/index.php',
-        '/ecommerce/dashboard/profile.php'
+        '/Projekt-LabKurs/dashboard/orders/index.php',
+        '/Projekt-LabKurs/dashboard/profile.php'
     ];
 
     // roles ----------------------
     if(isset($_SESSION['role'])) {
         if($_SESSION['role'] === 'client') {
             if(!in_array($path, $pages)) {
-                die('<center>You doesnt have permission to view this page - <a href="http://localhost/ecommerce/">back</a>.</center>');
+                die('<center>You doesnt have permission to view this page - <a href="http://localhost/Projekt-LabKurs/">back</a>.</center>');
             }
         }
     }
@@ -46,7 +46,7 @@
             setcookie('role', null, $expire);
             setcookie('is_loggedin', null, $expire);
 
-            header('Location: http://localhost/ecommerce/login.php');
+            header('Location: http://localhost/Projekt-LabKurs/login.php');
         }
     }
 ?>
@@ -62,7 +62,7 @@
 <body>
     <nav class="navbar navbar-expand-lg bg-light">
         <div class="container">
-            <a class="navbar-brand" href="http://localhost/ecommerce/dashboard/">Online Shop</a>
+            <a class="navbar-brand" href="http://localhost/Projekt-LabKurs/dashboard/">Online Shop</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
@@ -70,27 +70,27 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <?php if(isset($_SESSION['role']) && ($_SESSION['role'] === 'admin')) { ?>
                 <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="http://localhost/ecommerce/dashboard/">Home</a>
+                <a class="nav-link active" aria-current="page" href="http://localhost/Projekt-LabKurs/dashboard/">Home</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="http://localhost/ecommerce/dashboard/slides/index.php">Slides</a>
+                <a class="nav-link" href="http://localhost/Projekt-LabKurs/dashboard/slides/index.php">Slides</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="http://localhost/ecommerce/dashboard/categories/index.php">Categories</a>
+                <a class="nav-link" href="http://localhost/Projekt-LabKurs/dashboard/categories/index.php">Categories</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="http://localhost/ecommerce/dashboard/products/index.php">Products</a>
+                <a class="nav-link" href="http://localhost/Projekt-LabKurs/dashboard/products/index.php">Products</a>
                 </li>
                 <?php } ?>
                 <li class="nav-item">
-                <a class="nav-link" href="http://localhost/ecommerce/dashboard/orders/index.php">Orders</a>
+                <a class="nav-link" href="http://localhost/Projekt-LabKurs/dashboard/orders/index.php">Orders</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <?= isset($_SESSION['is_loggedin']) ? $_SESSION['username'] : 'Guest' ?>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="http://localhost/ecommerce/dashboard/profile.php">Profile</a></li>
+                        <li><a class="dropdown-item" href="http://localhost/Projekt-LabKurs/dashboard/profile.php">Profile</a></li>
                         <li><a class="dropdown-item" href="?action=sign_out">Sign out</a></li>
                     </ul>
                 </li>

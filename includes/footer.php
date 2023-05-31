@@ -12,7 +12,7 @@
                 e.preventDefault()
                 switch(e.keyCode) {
                     case 13:
-                        window.location.href = `http://localhost/ecommerce/shop.php?search=${e.target.value}`
+                        window.location.href = `http://localhost/Projekt-LabKurs/shop.php?search=${e.target.value}`
                         break
                 }
             })
